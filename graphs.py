@@ -38,9 +38,18 @@ st.set_page_config(
 
 with st.sidebar:
     """# Axes and gridlines"""
+    
+    # Add log scale controls
+    log_col1, log_col2 = st.columns(2)
+    with log_col1:
+        xlog = st.checkbox("Log scale x", value=False)
+    with log_col2:
+        ylog = st.checkbox("Log scale y", value=False)
+    
+    # Existing axis range controls
     xlowercol, xuppercol, xunitcol = st.columns(3)
     with xlowercol:
-        xuserlowerinput = st.number_input("Lower x:", value=-2.0)
+        xuserlowerinput = st.number_input("Lower x:", value=-2.0 if not xlog else 0.1)
     with xuppercol:
         xuserupperinput = st.number_input("Upper x:", value=8.0)
     with xunitcol:
@@ -50,7 +59,7 @@ with st.sidebar:
     
     ylowercol, yuppercol, yunitcol = st.columns(3)
     with ylowercol:
-        yuserlowerinput = st.number_input("Lower y:", value=-2.0)
+        yuserlowerinput = st.number_input("Lower y:", value=-2.0 if not ylog else 0.1)
     with yuppercol:
         yuserupperinput = st.number_input("Upper y:", value=8.0)
     with yunitcol:
@@ -134,7 +143,9 @@ fig, ax = create_graph(
     axis_weight=axis_weight,
     label_size=label_size,
     white_background=white_background,
-    skip_static_plots=False  # or True if you want to skip plotting static data
+    skip_static_plots=False,
+    xlog=xlog,
+    ylog=ylog
 )
 
 ax.plot(x_init, y_init, alpha=0)  # Plot invisible points

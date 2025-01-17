@@ -47,7 +47,7 @@ def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
             ax.grid(False)
         elif style == 'Major':
             ax.grid(True, which='major', color='#666666', linestyle='-', alpha=0.5, linewidth=axis_weight*0.7)
-        elif style == 'Minor':
+        elif style == 'Minor' and not (xlog or ylog):  # Only do minor grids for non-log axes
             if not xlog:
                 ax.xaxis.set_minor_locator(plt.MultipleLocator(xstep/xminordivisor))
             if not ylog:

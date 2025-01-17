@@ -49,30 +49,67 @@ with st.sidebar:
     # Existing axis range controls
     xlowercol, xuppercol, xunitcol = st.columns(3)
     with xlowercol:
-        xuserlowerinput = st.number_input("Lower x:", value=-2.0 if not xlog else 0.1)
+        if xlog:
+            xuserlowerinput = st.number_input("Lower x (10^n):", value=-1)  # 10^-1 = 0.1
+            xuserlower = 10**xuserlowerinput
+        else:
+            xuserlowerinput = st.number_input("Lower x:", value=-2.0)
+            xuserlower = xuserlowerinput * (PI if x_is_pi == "π" else 1)
+    
     with xuppercol:
-        xuserupperinput = st.number_input("Upper x:", value=8.0)
+        if xlog:
+            xuserupperinput = st.number_input("Upper x (10^n):", value=2)  # 10^2 = 100
+            xuserupper = 10**xuserupperinput
+        else:
+            xuserupperinput = st.number_input("Upper x:", value=8.0)
+            xuserupper = xuserupperinput * (PI if x_is_pi == "π" else 1)
+    
     with xunitcol:
-        x_is_pi = st.segmented_control("x unit:", options = ["1", "π"], default = '1', key="unit_control_1")
-    xuserlower = xuserlowerinput * (PI if x_is_pi == "π" else 1)
-    xuserupper = xuserupperinput * (PI if x_is_pi == "π" else 1)
+        if not xlog:  # Only show π units for linear scale
+            x_is_pi = st.segmented_control("x unit:", options = ["1", "π"], default = '1', key="unit_control_1")
+        else:
+            x_is_pi = "1"
     
     ylowercol, yuppercol, yunitcol = st.columns(3)
     with ylowercol:
-        yuserlowerinput = st.number_input("Lower y:", value=-2.0 if not ylog else 0.1)
-    with yuppercol:
-        yuserupperinput = st.number_input("Upper y:", value=8.0)
-    with yunitcol:
-        y_is_pi = st.segmented_control("y unit:", options = ["1", "π"], default = '1', key="unit_control_2")
-    yuserlower = yuserlowerinput * (PI if y_is_pi == "π" else 1)
-    yuserupper = yuserupperinput * (PI if y_is_pi == "π" else 1)
+        if ylog:
+            yuserlowerinput = st.number_input("Lower y (10^n):", value=-1)  # 10^-1 = 0.1
+            yuserlower = 10**yuserlowerinput
+        else:
+            yuserlowerinput = st.number_input("Lower y:", value=-2.0)
+            yuserlower = yuserlowerinput * (PI if y_is_pi == "π" else 1)
     
+    with yuppercol:
+        if ylog:
+            yuserupperinput = st.number_input("Upper y (10^n):", value=2)  # 10^2 = 100
+            yuserupper = 10**yuserupperinput
+        else:
+            yuserupperinput = st.number_input("Upper y:", value=8.0)
+            yuserupper = yuserupperinput * (PI if y_is_pi == "π" else 1)
+    
+    with yunitcol:
+        if not ylog:  # Only show π units for linear scale
+            y_is_pi = st.segmented_control("y unit:", options = ["1", "π"], default = '1', key="unit_control_2")
+        else:
+            y_is_pi = "1"
+    
+    # Modify padding calculation for log scales
     xdifference = xuserupper - xuserlower
     ydifference = yuserupper - yuserlower
-    xlower = xuserlower - 0.025 * xdifference
-    xupper = xuserupper + 0.025 * xdifference
-    ylower = yuserlower - 0.025 * ydifference
-    yupper = yuserupper + 0.025 * ydifference
+    
+    if xlog:
+        xlower = xuserlower
+        xupper = xuserupper
+    else:
+        xlower = xuserlower - 0.025 * xdifference
+        xupper = xuserupper + 0.025 * xdifference
+        
+    if ylog:
+        ylower = yuserlower
+        yupper = yuserupper
+    else:
+        ylower = yuserlower - 0.025 * ydifference
+        yupper = yuserupper + 0.025 * ydifference
     
     showvalues = st.checkbox("Show values on axes", value=True)
     
@@ -120,7 +157,10 @@ with st.sidebar:
 
 #-------INITIAL PLOT-------------------------
 
-x_init = np.linspace(xlower, xupper, 100000)
+if xlog:
+    x_init = np.logspace(np.log10(xlower), np.log10(xupper), 100000)
+else:
+    x_init = np.linspace(xlower, xupper, 100000)
 y_init = np.zeros_like(x_init)  # Create corresponding y values
 
 fig, ax = create_graph(

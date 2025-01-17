@@ -46,8 +46,22 @@ with st.sidebar:
     with log_col2:
         ylog = st.checkbox("Log scale y", value=False)
     
-    # Existing axis range controls
-    xlowercol, xuppercol, xunitcol = st.columns(3)
+    # Initialize unit variables
+    x_is_pi = "1"
+    y_is_pi = "1"
+    
+    # Define unit controls first
+    xunitcol, yunitcol = st.columns(2)
+    with xunitcol:
+        if not xlog:  # Only show π units for linear scale
+            x_is_pi = st.segmented_control("x unit:", options=["1", "π"], default='1', key="unit_control_1")
+    
+    with yunitcol:
+        if not ylog:  # Only show π units for linear scale
+            y_is_pi = st.segmented_control("y unit:", options=["1", "π"], default='1', key="unit_control_2")
+    
+    # Now handle the axis ranges
+    xlowercol, xuppercol = st.columns(2)
     with xlowercol:
         if xlog:
             xuserlowerinput = st.number_input("Lower x (10^n):", value=-1)  # 10^-1 = 0.1
@@ -64,13 +78,7 @@ with st.sidebar:
             xuserupperinput = st.number_input("Upper x:", value=8.0)
             xuserupper = xuserupperinput * (PI if x_is_pi == "π" else 1)
     
-    with xunitcol:
-        if not xlog:  # Only show π units for linear scale
-            x_is_pi = st.segmented_control("x unit:", options = ["1", "π"], default = '1', key="unit_control_1")
-        else:
-            x_is_pi = "1"
-    
-    ylowercol, yuppercol, yunitcol = st.columns(3)
+    ylowercol, yuppercol = st.columns(2)
     with ylowercol:
         if ylog:
             yuserlowerinput = st.number_input("Lower y (10^n):", value=-1)  # 10^-1 = 0.1
@@ -86,30 +94,6 @@ with st.sidebar:
         else:
             yuserupperinput = st.number_input("Upper y:", value=8.0)
             yuserupper = yuserupperinput * (PI if y_is_pi == "π" else 1)
-    
-    with yunitcol:
-        if not ylog:  # Only show π units for linear scale
-            y_is_pi = st.segmented_control("y unit:", options = ["1", "π"], default = '1', key="unit_control_2")
-        else:
-            y_is_pi = "1"
-    
-    # Modify padding calculation for log scales
-    xdifference = xuserupper - xuserlower
-    ydifference = yuserupper - yuserlower
-    
-    if xlog:
-        xlower = xuserlower
-        xupper = xuserupper
-    else:
-        xlower = xuserlower - 0.025 * xdifference
-        xupper = xuserupper + 0.025 * xdifference
-        
-    if ylog:
-        ylower = yuserlower
-        yupper = yuserupper
-    else:
-        ylower = yuserlower - 0.025 * ydifference
-        yupper = yuserupper + 0.025 * ydifference
     
     showvalues = st.checkbox("Show values on axes", value=True)
     

@@ -46,6 +46,11 @@ with st.sidebar:
     with log_col2:
         ylog = st.checkbox("Log scale y", value=False)
     
+    # Initialize all variables with defaults
+    xminordivisor = 1
+    yminordivisor = 1
+    gridstyle = st.segmented_control("Gridlines", options=["None", "Major", "Minor"], default='None')
+    
     # Initialize unit variables
     x_is_pi = "1"
     y_is_pi = "1"
@@ -60,7 +65,7 @@ with st.sidebar:
         if not ylog:  # Only show π units for linear scale
             y_is_pi = st.segmented_control("y unit:", options=["1", "π"], default='1', key="unit_control_2")
     
-    # Now handle the axis ranges
+    # Now handle the axis ranges with safe defaults
     xlowercol, xuppercol = st.columns(2)
     with xlowercol:
         if xlog:
@@ -94,8 +99,20 @@ with st.sidebar:
         else:
             yuserupperinput = st.number_input("Upper y:", value=8.0)
             yuserupper = yuserupperinput * (PI if y_is_pi == "π" else 1)
-    
-    # Add back the padding calculation
+
+    # Handle grid controls after ranges are set
+    if gridstyle == 'Minor' and not (xlog or ylog):
+        xdivcol, ydivcol = st.columns(2)
+        with xdivcol:
+            xminordivisor = st.number_input("Minor divisor for x:", value=4)
+        with ydivcol:
+            yminordivisor = st.number_input("Minor divisor for y:", value=4)
+
+    # If using log scales, force gridstyle to Major or None
+    if (xlog or ylog) and gridstyle == 'Minor':
+        gridstyle = 'Major'
+
+    # Add padding calculation
     xdifference = xuserupper - xuserlower
     ydifference = yuserupper - yuserlower
     
@@ -128,21 +145,6 @@ with st.sidebar:
         xstep = 1
         ystep = 1
         label_size = 16
-
-    gridstyle = st.segmented_control("Gridlines", options = ["None", "Major", "Minor"], default = 'None')
-
-    if gridstyle == 'Minor':
-        xdivcol, ydivcol = st.columns(2)
-        with xdivcol:
-            xminordivisor = st.number_input("Minor divisor for x:", value=4)
-        with ydivcol:
-            yminordivisor = st.number_input("Minor divisor for y:", value=4)
-    else:
-        xminordivisor = 1
-        yminordivisor = 1
-
-    if not gridstyle:
-        gridstyle = "None"
 
     """# Appearance"""
     axis_weight = st.slider("Axis weight", min_value=1.5, max_value=4.0, value=2.0, step=0.5)

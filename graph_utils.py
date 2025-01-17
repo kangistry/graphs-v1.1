@@ -21,7 +21,8 @@ def eval_function(user_func, x, lib, ylower=None, yupper=None):
 def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
     xminordivisor, yminordivisor, imagewidth, imageheight,
     xuserlower, xuserupper, yuserlower, yuserupper,
-    showvalues, axis_weight, label_size, white_background, x=None, skip_static_plots=False):
+    showvalues, axis_weight, label_size, white_background, x=None, skip_static_plots=False,
+    xlog=False, ylog=False):
     """Create and save a mathematical graph with the specified parameters."""
 
     #------define some nested functions---------
@@ -37,17 +38,20 @@ def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
 
     def set_grid_style(style):
         """Set the grid style."""
-        # Always set major locators
-        ax.set_xticks(np.arange(xuserlower, xuserupper + xstep, xstep))
-        ax.set_yticks(np.arange(yuserlower, yuserupper + ystep, ystep))
+        if not xlog:
+            ax.set_xticks(np.arange(xuserlower, xuserupper + xstep, xstep))
+        if not ylog:
+            ax.set_yticks(np.arange(yuserlower, yuserupper + ystep, ystep))
 
         if style == 'None':
             ax.grid(False)
         elif style == 'Major':
             ax.grid(True, which='major', color='#666666', linestyle='-', alpha=0.5, linewidth=axis_weight*0.7)
         elif style == 'Minor':
-            ax.xaxis.set_minor_locator(plt.MultipleLocator(xstep/xminordivisor))
-            ax.yaxis.set_minor_locator(plt.MultipleLocator(ystep/yminordivisor))
+            if not xlog:
+                ax.xaxis.set_minor_locator(plt.MultipleLocator(xstep/xminordivisor))
+            if not ylog:
+                ax.yaxis.set_minor_locator(plt.MultipleLocator(ystep/yminordivisor))
             ax.grid(True, which='major', color='#666666', linestyle='-', alpha=0.5, linewidth=axis_weight*0.7)
             ax.grid(True, which='minor', color='#999999', linestyle='-', alpha=0.2, linewidth=axis_weight*0.7)
             ax.tick_params(which='minor', length=0)
@@ -62,6 +66,12 @@ def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
     #------create the graph---------
                     
     fig, ax = plt.subplots(figsize=(imagewidth, imageheight))
+
+    # Set logarithmic scales if requested
+    if xlog:
+        ax.set_xscale('log')
+    if ylog:
+        ax.set_yscale('log')
 
     if not skip_static_plots:
         i = 1
@@ -92,8 +102,9 @@ def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
     set_grid_style(gridstyle)
 
     if showvalues:
-        ax.xaxis.set_major_formatter(FuncFormatter(sympy_formatter))
-        ax.yaxis.set_major_formatter(FuncFormatter(sympy_formatter))
+        if not (xlog or ylog):  # Only use sympy formatter for non-log axes
+            ax.xaxis.set_major_formatter(FuncFormatter(sympy_formatter))
+            ax.yaxis.set_major_formatter(FuncFormatter(sympy_formatter))
         ax.tick_params(axis='both', 
                        labelsize=label_size, 
                        labelfontfamily='sans-serif', 
@@ -107,8 +118,10 @@ def create_graph(xlower, xupper, ylower, yupper, xstep, ystep, gridstyle,
                 label.set_bbox(None)  # No background box
         yticks = ax.get_yticks()
         xticks = ax.get_xticks()
-        ax.set_yticks(yticks[yticks != 0])
-        ax.set_xticks(xticks[xticks != 0])
+        if not ylog:
+            ax.set_yticks(yticks[yticks != 0])
+        if not xlog:
+            ax.set_xticks(xticks[xticks != 0])
     else:
         ax.set_xticklabels([])
         ax.set_yticklabels([])

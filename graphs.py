@@ -95,6 +95,24 @@ with st.sidebar:
             yuserupperinput = st.number_input("Upper y:", value=8.0)
             yuserupper = yuserupperinput * (PI if y_is_pi == "π" else 1)
     
+    # Add back the padding calculation
+    xdifference = xuserupper - xuserlower
+    ydifference = yuserupper - yuserlower
+    
+    if xlog:
+        xlower = xuserlower
+        xupper = xuserupper
+    else:
+        xlower = xuserlower - 0.025 * xdifference
+        xupper = xuserupper + 0.025 * xdifference
+        
+    if ylog:
+        ylower = yuserlower
+        yupper = yuserupper
+    else:
+        ylower = yuserlower - 0.025 * ydifference
+        yupper = yuserupper + 0.025 * ydifference
+
     showvalues = st.checkbox("Show values on axes", value=True)
     
     if showvalues:
